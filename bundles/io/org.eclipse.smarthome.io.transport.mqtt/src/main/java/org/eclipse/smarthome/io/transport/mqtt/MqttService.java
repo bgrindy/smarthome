@@ -21,6 +21,7 @@ import javax.naming.ConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.smarthome.core.events.EventPublisher;
+import org.eclipse.smarthome.io.transport.mqtt.sslcontext.ClientAuthSSLContextProvider;
 import org.osgi.service.cm.ManagedService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -226,6 +227,12 @@ public class MqttService implements ManagedService {
         // Extract further configurations
         connection.setCredentials(brokerConnectionConfig.get("user"), brokerConnectionConfig.get("pwd"));
         connection.setClientId(brokerConnectionConfig.get("clientId"));
+        String clientKey = brokerConnectionConfig.get("clientKey");
+        String clientCert = brokerConnectionConfig.get("clientCert");
+        String caCert = brokerConnectionConfig.get("caCert");
+        if (StringUtils.isNotEmpty(clientKey) && StringUtils.isNotEmpty(clientCert) && StringUtils.isNotEmpty(caCert)) {
+            connection.setSSLContextProvider(new ClientAuthSSLContextProvider(clientKey, clientCert, caCert));
+        }
         String property = brokerConnectionConfig.get("keepAlive");
         if (!StringUtils.isBlank(property)) {
             connection.setKeepAliveInterval(Integer.valueOf(property));
